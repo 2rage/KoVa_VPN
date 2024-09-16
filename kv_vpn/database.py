@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import datetime
 from .config import DATABASE_URL
 
 Base = declarative_base()
@@ -30,13 +29,13 @@ def create_database():
 
 def add_user(telegram_id):
     """Добавляем нового пользователя в базу"""
-    new_user = User(telegram_id=telegram_id)
+    new_user = User(telegram_id=str(telegram_id))
     session.add(new_user)
     session.commit()
 
 def get_user_by_telegram_id(telegram_id):
     """Получаем пользователя по Telegram ID"""
-    return session.query(User).filter_by(telegram_id=telegram_id).first()
+    return session.query(User).filter_by(telegram_id=str(telegram_id)).first()
 
 def update_balance(user, amount):
     """Обновляем баланс пользователя"""

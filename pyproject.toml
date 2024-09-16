@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "kv-vpn"
-version = "0.1.0"
-description = ""
+version = "0.1.1"
+description = "VPN Service"
 authors = ["2rage <the2rage@icloud.com>"]
 readme = "README.md"
 
@@ -11,6 +11,10 @@ python-telegram-bot = "^20.0"
 requests = "^2.31.0"
 sqlalchemy = "^2.0.34"
 psycopg2 = "^2.9.9"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.scripts]
+kova-vpn = "kv_vpn.bot:main"
 
 [build-system]
 requires = ["poetry-core"]
