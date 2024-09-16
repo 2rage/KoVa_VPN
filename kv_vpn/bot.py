@@ -2,6 +2,7 @@ from telegram import Update, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKe
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from .config import TELEGRAM_TOKEN
 from .database import add_user, get_user_by_telegram_id
+from .messages import START_MESSAGE, MENU_MESSAGE, TEST_DB_SUCCESS, TEST_DB_FAIL, RECOGNIZE_BUTTON, BUY_MESSAGE
 
 # Меню кнопок
 def get_main_menu():
@@ -19,6 +20,15 @@ def get_try_button():
     ]
     return InlineKeyboardMarkup(keyboard)
 
+def get_buy_options():
+    keyboard = [
+        [InlineKeyboardButton("Купить на месяц / 149₽", callback_data='buy_1_month')],
+        [InlineKeyboardButton("Купить на полгода / 849₽ -5%", callback_data='buy_6_months')],
+        [InlineKeyboardButton("Купить на год / 1599₽ -10%", callback_data='buy_1_year')],
+        [InlineKeyboardButton("Купить на 3 года / 4599₽ -15%", callback_data='buy_3_years')]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
 async def start(update: Update, context):
     """Обрабатываем команду /start и добавляем пользователя в базу данных"""
     telegram_id = update.message.from_user.id
@@ -32,16 +42,13 @@ async def start(update: Update, context):
     await context.bot.send_photo(
         chat_id=update.message.chat_id,
         photo='https://cliqist.com/wp-content/uploads/2014/07/underdevelopmentlogo.jpg',  # Замените на ссылку или ID вашей картинки
-        caption=("Привет! Это частный бот KoVa VPN\n\n"
-                 "Нажмите на необходимую кнопку из меню ниже ⬇️\n\n"
-                 "Вы также можете испытать пробную версию на месяц за 29₽ "
-                 "по быстрой ссылке ниже ⬇️"),
+        caption=START_MESSAGE,
         reply_markup=get_try_button()
     )
 
     # Отправка меню
     await update.message.reply_text(
-        "Выберите нужную опцию из меню:", 
+        MENU_MESSAGE, 
         reply_markup=get_main_menu()
     )
 
@@ -50,14 +57,18 @@ async def handle_message(update: Update, context):
     text = update.message.text
     telegram_id = update.message.from_user.id
 
-    if text == "Тест БД (Не для продакшена)":
+    if text == "Купить":
+        # Сообщение и inline-кнопки под сообщением
+        await update.message.reply_text(BUY_MESSAGE, reply_markup=get_buy_options())
+
+    elif text == "Тест БД (Не для продакшена)":
         user = get_user_by_telegram_id(telegram_id)
         if user:
-            await update.message.reply_text("Пользователь найден в базе данных.")
+            await update.message.reply_text(TEST_DB_SUCCESS)
         else:
-            await update.message.reply_text("Пользователь не найден в базе данных.")
+            await update.message.reply_text(TEST_DB_FAIL)
     else:
-        await update.message.reply_text(f"Вы нажали кнопку: {text}")
+        await update.message.reply_text(RECOGNIZE_BUTTON.format(button_text=text))
 
 
 def main():
