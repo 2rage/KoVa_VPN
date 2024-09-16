@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# macOS
+.DS_Store
+
+# Poetry
+poetry.lock
+
+# Virtual environments
+venv/
+.env
+.venv/
+
+# VS Code settings
+.vscode/
+*.code-workspace
+
+# PyCharm settings
+.idea/
+
+# Test coverage and logs
+htmlcov/
+*.cover
+.coverage
+*.log
+.coverage.*
+.cache
+.pytest_cache/
+nose2-*.xml
+coverage.xml
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Environments
+.envrc
+*.env
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# System files
+Thumbs.db
