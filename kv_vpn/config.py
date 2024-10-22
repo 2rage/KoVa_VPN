@@ -5,6 +5,6 @@ import os
 load_dotenv()
 
 # Получаем значения переменных окружения
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-DATABASE_URL = os.getenv('DATABASE_URL')
-YOOMONEY_TOKEN = os.getenv('YOOMONEY_TOKEN')
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+DATABASE_URL = os.getenv("DATABASE_URL")
+YOOMONEY_TOKEN = os.getenv("YOOMONEY_TOKEN")
