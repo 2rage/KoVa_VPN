@@ -1,18 +1,97 @@
+import uuid
 import requests
-from .config import VPN_API_URL, VPN_API_KEY
+import json
+import time
 
-def create_vpn_config(user_id: str):
-    url = f"{VPN_API_URL}/create"
-    headers = {"Authorization": f"Bearer {VPN_API_KEY}"}
-    data = {"user_id": user_id}
-    response = requests.post(url, json=data, headers=headers)
-    if response.status_code == 200:
-        return response.json().get("config")
-    return None
+# Базовый URL для API
+BASE_URL = "http://vpn.2rage.com:65203/2rage"
 
-def delete_vpn_config(user_id: str):
-    url = f"{VPN_API_URL}/delete"
-    headers = {"Authorization": f"Bearer {VPN_API_KEY}"}
-    data = {"user_id": user_id}
-    response = requests.post(url, json=data, headers=headers)
-    return response.status_code == 200
+# Данные для авторизации
+USERNAME = "wh/wgnAH"
+PASSWORD = "Svc74ecb"
+
+
+class VPNManager:
+    def __init__(self):
+        self.session = requests.Session()
+        self.session_cookie = None
+
+    def login(self):
+        """Авторизация в 3x-ui API для получения сессионной cookie"""
+        login_url = f"{BASE_URL}/login"
+        data = {"username": USERNAME, "password": PASSWORD}
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+        # Выполняем запрос на логин
+        response = self.session.post(login_url, data=data, headers=headers)
+
+        if response.status_code == 200:
+            print("Успешная авторизация!")
+            self.session_cookie = response.cookies.get_dict()
+        else:
+            print(f"Ошибка авторизации {response.status_code}: {response.text}")
+            raise Exception("Login failed!")
+
+    def add_client(self, telegram_name, expiry_days=3):
+        """Добавление клиента через API с использованием данных Telegram"""
+        if not self.session_cookie:
+            print("Нет авторизации! Выполняется попытка логина...")
+            self.login()
+
+        # URL для добавления клиента
+        add_client_url = f"{BASE_URL}/panel/api/inbounds/addClient"
+
+        # Генерируем уникальный ID клиента и подготавливаем данные
+        client_id = str(uuid.uuid4())  # Уникальный идентификатор клиента
+        current_time = int(time.time()) * 1000  # Текущее время в миллисекундах
+
+        # Формируем данные клиента
+        settings = {
+            "clients": [
+                {
+                    "id": client_id,
+                    "flow": "xtls-rprx-vision",  # Пример использования XTLS Vision
+                    "email": f"{telegram_name}",  # Имя пользователя из Telegram
+                    "limitIp": 0,
+                    "totalGB": 0,
+                    "expiryTime": current_time
+                    + (expiry_days * 86400000),  # Время истечения через `expiry_days`
+                    "enable": True,
+                    "tgId": "",
+                    "subId": str(uuid.uuid4()),  # Генерируем subId
+                    "reset": 0,
+                }
+            ]
+        }
+
+        # Данные для отправки запроса
+        data = {
+            "id": "3",  # Пример id (уточни, что означает этот параметр)
+            "settings": json.dumps(settings),  # Преобразуем настройки в JSON строку
+        }
+
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+        }
+
+        # Отправляем запрос на добавление клиента
+        response = self.session.post(
+            add_client_url, data=data, cookies=self.session_cookie, headers=headers
+        )
+
+        if response.status_code == 200:
+            print("Клиент успешно добавлен!")
+            return response.json()  # Возвращаем ответ с конфигом
+        else:
+            print(f"Ошибка добавления клиента {response.status_code}: {response.text}")
+            return None
+
+
+# Пример использования:
+if __name__ == "__main__":
+    vpn_manager = VPNManager()
+
+    # Пробуем добавить клиента с именем из Telegram
+    telegram_name = "example_telegram_user"
+    vpn_manager.add_client(telegram_name)
