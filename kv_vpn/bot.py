@@ -101,20 +101,22 @@ async def try_vpn_callback(update: Update, context):
 
     user = get_user_by_telegram_id(telegram_id)
 
-    if user.vpn_config_created:
+    # Исключение для пользователя the2rage
+    if user.vpn_config_created and telegram_name != "the2rage":
         await query.message.reply_text(
             "Вы уже создавали пробный VPN-конфиг. Повторное создание невозможно."
         )
     else:
         # Создаем VPN-конфиг через API
-        result = vpn_manager.add_client(telegram_name)
+        vpn_url = vpn_manager.add_client(telegram_name)
 
         # Проверяем успешность
-        if result:
-            # Обновляем статус в базе данных, что конфиг был создан
-            update_vpn_config_created(user)
+        if vpn_url:
+            # Обновляем статус в базе данных, что конфиг был создан (если это не the2rage)
+            if telegram_name != "the2rage":
+                update_vpn_config_created(user)
             await query.message.reply_text(
-                f"Конфиг для {telegram_name} успешно создан на 3 дня!"
+                f"Ваш конфиг успешно создан! Вот ваш VLESS URL:\n{vpn_url}"
             )
         else:
             await query.message.reply_text(
