@@ -32,6 +32,24 @@ class VPNManager:
             print(f"Ошибка авторизации {response.status_code}: {response.text}")
             raise Exception("Login failed!")
 
+    def generate_vless_url(
+        self,
+        client_id,
+        domain,
+        port,
+        flow="xtls-rprx-vision",
+        security="reality",
+        pbk="fdFiozyLzqjV_xozUSxqsJGxXcuNOpPnCCzhtKapQwg",
+        fp="safari",
+        sni="yahoo.com",
+        sid="bf1f",
+        spx="%2F",
+        remark="Reality-the2rage",
+    ):
+        """Генерация VLESS URL на основе данных клиента с дополнительными параметрами"""
+        vless_url = f"vless://{client_id}@{domain}:{port}/?type=tcp&security={security}&pbk={pbk}&fp={fp}&sni={sni}&sid={sid}&spx={spx}&flow={flow}#{remark}"
+        return vless_url
+
     def add_client(self, telegram_name, expiry_days=3):
         """Добавление клиента через API с использованием данных Telegram"""
         if not self.session_cookie:
@@ -82,16 +100,11 @@ class VPNManager:
 
         if response.status_code == 200:
             print("Клиент успешно добавлен!")
-            return response.json()  # Возвращаем ответ с конфигом
+            # Генерируем VLESS URL на основе данных клиента
+            domain = "vpn.2rage.com"
+            port = 443
+            vless_url = self.generate_vless_url(client_id, domain, port)
+            return vless_url
         else:
             print(f"Ошибка добавления клиента {response.status_code}: {response.text}")
             return None
-
-
-# Пример использования:
-if __name__ == "__main__":
-    vpn_manager = VPNManager()
-
-    # Пробуем добавить клиента с именем из Telegram
-    telegram_name = "example_telegram_user"
-    vpn_manager.add_client(telegram_name)
